@@ -1,0 +1,9 @@
+credenciales.json
+__pycache__/
+*.pyc
+.check_data.py
+.clean_carreras.py
+.verify_data.py
+.env
+.DS_Store
+Thumbs.db
