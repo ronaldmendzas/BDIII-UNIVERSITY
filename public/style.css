@@ -271,6 +271,7 @@ body {
     opacity: 0.25; transition: opacity 0.3s;
 }
 .card:hover::before { opacity: 0.6; }
+.card::before { pointer-events: none; }
 .card h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: var(--text-primary); position: relative; }
 
 .animated-border-card {
@@ -282,12 +283,14 @@ body {
     border-radius: calc(var(--radius) + 1.5px);
     background: conic-gradient(from var(--card-angle, 0deg), var(--ig-purple), var(--ig-pink), var(--ig-orange), var(--ig-yellow), var(--ig-purple));
     animation: rotateGradient 6s linear infinite; z-index: 0; opacity: 0.7;
+    pointer-events: none;
 }
 @property --card-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
 .animated-border-card::after {
     content: ''; position: absolute; inset: 2px;
     border-radius: calc(var(--radius) - 2px);
-    background: var(--bg-secondary); z-index: 0;
+    background: var(--bg-secondary); z-index: 1;
+    pointer-events: none;
 }
 .stat-card {
     padding: 18px; border-radius: var(--radius);
@@ -303,7 +306,8 @@ body {
     opacity: 0.3; transition: opacity 0.3s;
 }
 .stat-card:hover::before { opacity: 0.7; }
-.stat-card-inner { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+.stat-card::before { pointer-events: none; }
+.stat-card-inner { display: flex; align-items: center; gap: 14px; position: relative; z-index: 2; }
 .stat-icon {
     width: 42px; height: 42px; border-radius: 12px; display: flex;
     align-items: center; justify-content: center; font-size: 15px; font-weight: 700;
@@ -339,6 +343,7 @@ body {
     opacity: 0.15; transition: opacity 0.3s;
 }
 .chart-card:hover::before { opacity: 0.35; }
+.chart-card::before { pointer-events: none; }
 .chart-card h3 { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 10px; position: relative; }
 
 /* ═══════════════ TABLES ═══════════════ */
@@ -595,9 +600,8 @@ textarea.input { min-height: 70px; resize: vertical; }
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .modal {
-    background: var(--bg-secondary); border: 2px solid transparent;
-    border-image: var(--ig-gradient) 1;
-    border-radius: 0;
+    background: var(--bg-secondary); border: 2px solid var(--lp-color);
+    border-radius: var(--radius-lg);
     max-width: 560px; width: 92%; max-height: 85vh;
     overflow-y: auto; box-shadow: 0 20px 60px rgba(131,58,180,0.2);
     animation: slideUp 0.25s ease;
