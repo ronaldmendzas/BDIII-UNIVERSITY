@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniSpanner - Sistema Nacional de Registro Universitario</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <div id="loading-overlay" class="loading-overlay" style="display:none;">
+        <div class="spinner"></div>
+        <p id="loading-text">Cargando...</p>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ═══════════════ PANTALLA 0: SPLASH ═══════════════ -->
+    <div id="screen-splash" class="screen active">
+        <div class="splash-bg">
+            <div class="splash-particles" id="particles"></div>
+        </div>
+        <div class="splash-content">
+            <div class="splash-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 5v6c0 1.66-4.03 3-9 3s-9-1.34-9-3V5"/><path d="M21 11v6c0 1.66-4.03 3-9 3s-9-1.34-9-3v-6"/><path d="M3 5v14"/></svg>
+                </div>
+                <h1 class="splash-title">UniSpanner</h1>
+            </div>
+            <p class="splash-subtitle">Sistema Nacional de Registro Universitario</p>
+            <p class="splash-powered">Powered by Google Cloud Spanner</p>
+            <div class="splash-divider"></div>
+            <p class="splash-choose">Selecciona tu sede para comenzar</p>
+            <div class="splash-cards">
+                <div class="splash-card" onclick="App.selectSede('La Paz')">
+                    <div class="splash-card-border lp-border"></div>
+                    <div class="splash-card-inner">
+                        <div class="splash-card-icon">LP</div>
+                        <h2>La Paz</h2>
+                        <p>Sede Principal</p>
+                    </div>
+                </div>
+                <div class="splash-card" onclick="App.selectSede('Santa Cruz')">
+                    <div class="splash-card-border sc-border"></div>
+                    <div class="splash-card-inner">
+                        <div class="splash-card-icon">SC</div>
+                        <h2>Santa Cruz</h2>
+                        <p>Sede Oriental</p>
+                    </div>
+                </div>
+                <div class="splash-card" onclick="App.selectSede('Cochabamba')">
+                    <div class="splash-card-border cb-border"></div>
+                    <div class="splash-card-inner">
+                        <div class="splash-card-icon">CB</div>
+                        <h2>Cochabamba</h2>
+                        <p>Sede Central</p>
+                    </div>
+                </div>
+            </div>
+            <div class="splash-connection" id="splash-connection">
+                <span class="connection-dot"></span>
+                <span id="splash-connection-text">Conectando a Spanner...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ MAIN APP SHELL ═══════════════ -->
+    <div id="app-shell" class="app-shell hidden">
+        <nav class="navbar">
+            <div class="navbar-left">
+                <div class="navbar-logo nav-btn-home" onclick="App.navigate('dashboard')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 5v6c0 1.66-4.03 3-9 3s-9-1.34-9-3V5"/><path d="M21 11v6c0 1.66-4.03 3-9 3s-9-1.34-9-3v-6"/></svg>
+                    <span class="navbar-brand">UniSpanner</span>
+                </div>
+                <div class="sede-badge" id="sede-badge">La Paz</div>
+            </div>
+            <div class="navbar-center">
+                <button class="nav-btn" data-screen="dashboard" onclick="App.navigate('dashboard')">Dashboard</button>
+                <button class="nav-btn" data-screen="estudiantes" onclick="App.navigate('estudiantes')">Estudiantes</button>
+                <button class="nav-btn" data-screen="docentes" onclick="App.navigate('docentes')">Docentes</button>
+                <button class="nav-btn" data-screen="materias" onclick="App.navigate('materias')">Materias</button>
+                <button class="nav-btn" data-screen="inscripciones" onclick="App.navigate('inscripciones')">Inscripciones</button>
+                <button class="nav-btn" data-screen="notas" onclick="App.navigate('notas')">Notas</button>
+                <button class="nav-btn" data-screen="fragmentacion" onclick="App.navigate('fragmentacion')">Fragmentacion</button>
+                <button class="nav-btn" data-screen="monitor" onclick="App.navigate('monitor')">Monitor</button>
+                <button class="nav-btn" data-screen="sedes" onclick="App.navigate('sedes')">Sedes</button>
+            </div>
+            <div class="navbar-right">
+                <div class="connection-indicator" id="connection-indicator">
+                    <span class="conn-ring disconnected" id="conn-ring"><span class="conn-dot-inner"></span></span>
+                    <span id="connection-text">Spanner</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="App.changeSede()">Cambiar Sede</button>
+            </div>
+        </nav>
+
+        <!-- ═══════════════ DASHBOARD ═══════════════ -->
+        <section id="screen-dashboard" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Dashboard</h2>
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card animated-border-card"><div class="stat-card-inner"><div class="stat-icon">E</div><div class="stat-info"><span class="stat-value" id="stat-mi-sede">0</span><span class="stat-label" id="stat-mi-sede-label">Estudiantes en Mi Sede</span></div></div></div>
+                    <div class="stat-card"><div class="stat-card-inner"><div class="stat-icon">N</div><div class="stat-info"><span class="stat-value" id="stat-nacional">0</span><span class="stat-label">Estudiantes Nacional</span></div></div></div>
+                    <div class="stat-card"><div class="stat-card-inner"><div class="stat-icon">D</div><div class="stat-info"><span class="stat-value" id="stat-docentes">0</span><span class="stat-label">Docentes</span></div></div></div>
+                    <div class="stat-card"><div class="stat-card-inner"><div class="stat-icon">M</div><div class="stat-info"><span class="stat-value" id="stat-materias">0</span><span class="stat-label">Materias</span></div></div></div>
+                    <div class="stat-card"><div class="stat-card-inner"><div class="stat-icon">I</div><div class="stat-info"><span class="stat-value" id="stat-inscripciones">0</span><span class="stat-label">Inscripciones</span></div></div></div>
+                    <div class="stat-card"><div class="stat-card-inner"><div class="stat-icon">C</div><div class="stat-info"><span class="stat-value" id="stat-equipos">0</span><span class="stat-label">Equipos Conectados</span></div></div></div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-card"><h3>Estudiantes por Sede</h3><canvas id="chart-sedes"></canvas></div>
+                    <div class="chart-card"><h3>Distribucion por Carrera</h3><canvas id="chart-carreras"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3>Ultimos Estudiantes Registrados</h3>
+                    <div class="table-wrapper">
+                        <table id="dashboard-last-students">
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>Carrera</th><th>Sede</th><th>Estado</th></tr></thead>
+                            <tbody><tr><td colspan="6" class="empty-cell">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════ ESTUDIANTES ═══════════════ -->
+        <section id="screen-estudiantes" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Gestion de Estudiantes</h2>
+                <div class="card">
+                    <h3>Fragmentacion Horizontal por Sede</h3>
+                    <div class="tab-bar">
+                        <button class="tab-btn active" data-sede="lapaz" onclick="App.switchEstudianteTab('lapaz')">La Paz</button>
+                        <button class="tab-btn" data-sede="santacruz" onclick="App.switchEstudianteTab('santacruz')">Santa Cruz</button>
+                        <button class="tab-btn" data-sede="cochabamba" onclick="App.switchEstudianteTab('cochabamba')">Cochabamba</button>
+                        <button class="tab-btn tab-btn-nacional" onclick="App.loadEstudiantesNacional()">Ver Nacional (UNION)</button>
+                    </div>
+                    <div class="action-bar">
+                        <input type="text" id="est-search" placeholder="Buscar por nombre o CI..." class="input" oninput="App.filterEstudiantes()">
+                        <select id="est-filter-carrera" class="input" onchange="App.filterEstudiantes()"><option value="">Todas las carreras</option></select>
+                        <select id="est-filter-semestre" class="input" onchange="App.filterEstudiantes()">
+                            <option value="">Todos los semestres</option>
+                            <option value="1">Semestre 1</option><option value="2">Semestre 2</option>
+                            <option value="3">Semestre 3</option><option value="4">Semestre 4</option>
+                            <option value="5">Semestre 5</option><option value="6">Semestre 6</option>
+                            <option value="7">Semestre 7</option><option value="8">Semestre 8</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="App.showEstudianteForm()">+ Nuevo Estudiante</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="estudiantes-table">
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>CI</th><th>Carrera</th><th>Semestre</th><th>Email</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody><tr><td colspan="9" class="empty-cell">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card mt-24">
+                    <h3>Fragmentacion Vertical - Datos Completos</h3>
+                    <p class="text-muted mb-16">Selecciona un estudiante para ver sus datos divididos en dos tablas (Personal y Academico)</p>
+                    <div class="action-bar">
+                        <button class="btn btn-secondary" onclick="App.showEstudianteCompletoForm()">+ Registrar Datos Completos</button>
+                        <button class="btn btn-secondary" onclick="App.loadFragmentacionVertical()">Ver JOIN Vertical</button>
+                    </div>
+                    <div id="vertical-details" class="vertical-panels hidden">
+                        <div class="vertical-panel">
+                            <h4 class="vertical-panel-title">Estudiante_Personal</h4>
+                            <div id="personal-details" class="detail-grid"><p class="text-muted">Selecciona un estudiante</p></div>
+                        </div>
+                        <div class="vertical-connector">
+                            <div class="connector-line"></div>
+                            <div class="connector-label">estudiante_id</div>
+                            <div class="connector-line"></div>
+                        </div>
+                        <div class="vertical-panel">
+                            <h4 class="vertical-panel-title">Estudiante_Academico</h4>
+                            <div id="academico-details" class="detail-grid"><p class="text-muted">Selecciona un estudiante</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════ DOCENTES ═══════════════ -->
+        <section id="screen-docentes" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Gestion de Docentes</h2>
+                <div class="card">
+                    <div class="action-bar">
+                        <select id="doc-filter-sede" class="input" onchange="App.loadDocentes()">
+                            <option value="">Todas las sedes</option><option value="LP">La Paz</option>
+                            <option value="SC">Santa Cruz</option><option value="CB">Cochabamba</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="App.showDocenteForm()">+ Nuevo Docente</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="docentes-table">
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>CI</th><th>Email</th><th>Especialidad</th><th>Sede</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody><tr><td colspan="9" class="empty-cell">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════ MATERIAS ═══════════════ -->
+        <section id="screen-materias" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Gestion de Materias</h2>
+                <div class="card">
+                    <div class="action-bar">
+                        <select id="mat-filter-sede" class="input" onchange="App.loadMaterias()">
+                            <option value="">Todas las sedes</option><option value="LP">La Paz</option>
+                            <option value="SC">Santa Cruz</option><option value="CB">Cochabamba</option>
+                        </select>
+                        <select id="mat-filter-carrera" class="input" onchange="App.loadMaterias()"><option value="">Todas las carreras</option></select>
+                        <button class="btn btn-primary" onclick="App.showMateriaForm()">+ Nueva Materia</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="materias-table">
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Codigo</th><th>Carrera</th><th>Semestre</th><th>Creditos</th><th>Docente</th><th>Sede</th><th>Acciones</th></tr></thead>
+                            <tbody><tr><td colspan="9" class="empty-cell">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════ INSCRIPCIONES ═══════════════ -->
+        <section id="screen-inscripciones" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Inscripciones</h2>
+                <div class="card">
+                    <div class="action-bar"><button class="btn btn-primary" onclick="App.showInscripcionForm()">+ Nueva Inscripcion</button></div>
+                    <div class="table-wrapper">
+                        <table id="inscripciones-table">
+                            <thead><tr><th>ID</th><th>Estudiante</th><th>Materia</th><th>Sede</th><th>Gestion</th><th>Semestre</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody><tr><td colspan="8" class="empty-cell">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════ NOTAS ═══════════════ -->
+        <section id="screen-notas" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Notas</h2>
+                <div class="card">
+                    <div class="action-bar"><button class="btn btn-primary" onclick="App.showNotaForm()">+ Registrar Nota</button></div>
+                    <div class="table-wrapper">
+                        <table id="notas-table">
+                            <thead><tr><th>Estudiante</th><th>Materia</th><th>Sede</th><th>Nota 1</th><th>Nota 2</th><th>Nota 3</th><th>Promedio</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody><tr><td colspan="9" class="empty-cell">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════ FRAGMENTACION ═══════════════ -->
+        <section id="screen-fragmentacion" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Visualizacion de Fragmentacion</h2>
+
+                <div class="card mb-24">
+                    <h3>Seccion A - Fragmentacion Horizontal por Sede Geografica</h3>
+                    <p class="text-muted mb-16">Los datos se dividen por ciudad. Cada sede tiene su propio fragmento independiente.</p>
+                    <div class="frag-diagram">
+                        <div class="frag-node frag-node-central">BD Nacional</div>
+                        <div class="frag-arrows">
+                            <div class="frag-arrow frag-arrow-lp"></div>
+                            <div class="frag-arrow frag-arrow-sc"></div>
+                            <div class="frag-arrow frag-arrow-cb"></div>
+                        </div>
+                        <div class="frag-branches">
+                            <div class="frag-node frag-node-lp"><span class="frag-city">La Paz</span><span class="frag-count" id="frag-lp-count">0</span><span class="frag-label">registros</span></div>
+                            <div class="frag-node frag-node-sc"><span class="frag-city">Santa Cruz</span><span class="frag-count" id="frag-sc-count">0</span><span class="frag-label">registros</span></div>
+                            <div class="frag-node frag-node-cb"><span class="frag-city">Cochabamba</span><span class="frag-count" id="frag-cb-count">0</span><span class="frag-label">registros</span></div>
+                        </div>
+                    </div>
+                    <div class="action-bar mt-16"><button class="btn btn-primary" onclick="App.loadFragmentacionHorizontal()">Consulta Unificada (UNION ALL)</button></div>
+                    <div id="frag-h-sql" class="sql-box hidden"><h4>SQL Ejecutado:</h4><pre id="frag-h-sql-text"></pre></div>
+                    <div id="frag-h-tables" class="frag-comparison hidden">
+                        <div class="frag-col lp-col"><h4 class="lp-text">Fragmento La Paz</h4><div class="table-wrapper"><table id="frag-lp-table"><thead><tr><th>Nombre</th><th>Apellido</th><th>Carrera</th><th>Semestre</th></tr></thead><tbody></tbody></table></div></div>
+                        <div class="frag-col sc-col"><h4 class="sc-text">Fragmento Santa Cruz</h4><div class="table-wrapper"><table id="frag-sc-table"><thead><tr><th>Nombre</th><th>Apellido</th><th>Carrera</th><th>Semestre</th></tr></thead><tbody></tbody></table></div></div>
+                        <div class="frag-col cb-col"><h4 class="cb-text">Fragmento Cochabamba</h4><div class="table-wrapper"><table id="frag-cb-table"><thead><tr><th>Nombre</th><th>Apellido</th><th>Carrera</th><th>Semestre</th></tr></thead><tbody></tbody></table></div></div>
+                    </div>
+                </div>
+
+                <div class="card mb-24">
+                    <h3>Seccion B - Fragmentacion Vertical por Tipo de Dato</h3>
+                    <p class="text-muted mb-16">Los datos de un mismo estudiante se dividen en dos tablas segun su tipo: personal y academico.</p>
+                    <div class="vertical-frag-diagram">
+                        <div class="vf-source">Estudiante (Completo)</div>
+                        <div class="vf-arrows"><div class="vf-arrow vf-arrow-personal"></div><div class="vf-arrow vf-arrow-academico"></div></div>
+                        <div class="vf-branches">
+                            <div class="vf-fragment vf-fragment-personal">
+                                <h4>Estudiante_Personal</h4>
+                                <ul><li class="pk-col">estudiante_id (PK)</li><li>ci</li><li>fecha_nacimiento</li><li>telefono</li><li>direccion</li><li>email</li><li>genero</li><li>fecha_registro</li></ul>
+                            </div>
+                            <div class="vf-connector-v"><div class="connector-line"></div><div class="connector-label">JOIN por<br>estudiante_id</div><div class="connector-line"></div></div>
+                            <div class="vf-fragment vf-fragment-academico">
+                                <h4>Estudiante_Academico</h4>
+                                <ul><li class="pk-col">estudiante_id (PK/FK)</li><li>nombre</li><li>apellido</li><li>carrera</li><li>semestre_actual</li><li>sede_id</li><li>estado</li><li>gestion_ingreso</li><li>promedio_general</li></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-bar mt-16">
+                        <button class="btn btn-secondary" onclick="App.showEstudianteCompletoForm()">+ Registrar Datos Completos</button>
+                        <button class="btn btn-primary" onclick="App.executeVerticalJoin()">Ejecutar JOIN</button>
+                    </div>
+                    <div id="frag-v-sql" class="sql-box hidden"><h4>SQL del JOIN:</h4><pre id="frag-v-sql-text"></pre></div>
+                    <div id="frag-v-result" class="hidden"><h4>Resultado del JOIN:</h4><div class="table-wrapper"><table id="frag-v-table"><thead><tr><th>ID</th><th>CI</th><th>Genero</th><th>Nombre</th><th>Apellido</th><th>Carrera</th><th>Semestre</th><th>Sede</th><th>Promedio</th></tr></thead><tbody></tbody></table></div></div>
+                </div>
+
+                <div class="card">
+                    <h3>Seccion C - Comparacion</h3>
+                    <div class="table-wrapper">
+                        <table class="comparison-table">
+                            <thead><tr><th>Aspecto</th><th>Fragmentacion Horizontal</th><th>Fragmentacion Vertical</th></tr></thead>
+                            <tbody>
+                                <tr><td>Criterio de division</td><td>Por valores de filas (registros completos en diferentes tablas)</td><td>Por columnas (atributos en diferentes tablas)</td></tr>
+                                <tr><td>Ejemplo en este sistema</td><td>Estudiantes_LaPaz, Estudiantes_SantaCruz, Estudiantes_Cochabamba</td><td>Estudiante_Personal, Estudiante_Academico</td></tr>
+                                <tr><td>Reconstruccion</td><td>UNION ALL</td><td>JOIN por clave primaria</td></tr>
+                                <tr><td>Ventaja principal</td><td>Consultas locales rapidas (solo se accede a la sede relevante)</td><td>Privacidad y seguridad por tipo de dato</td></tr>
+                                <tr><td>Desventaja principal</td><td>Consultas nacionales requieren UNION de todos los fragmentos</td><td>Consultas completas requieren JOIN de las tablas</td></tr>
+                                <tr><td>Cuando usar</td><td>Cuando los datos se agrupan naturalmente por region o categoria</td><td>Cuando diferentes usuarios necesitan diferentes subconjuntos de columnas</td></tr>
+                                <tr><td>Integridad referencial</td><td>Cada fragmento es independiente y completo</td><td>Requiere clave foranea entre fragmentos</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════ MONITOR ═══════════════ -->
+        <section id="screen-monitor" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Monitor en Vivo</h2>
+                <p class="text-muted mb-24">Ejercicio en Clase - Conexiones en tiempo real</p>
+                <div class="stats-grid">
+                    <div class="stat-card animated-border-card"><div class="stat-card-inner"><div class="stat-icon">C</div><div class="stat-info"><span class="stat-value" id="monitor-equipos">0</span><span class="stat-label">Equipos Conectados</span></div></div></div>
+                </div>
+                <div class="monitor-grid">
+                    <div class="card">
+                        <h3>Mapa de Bolivia - Sedes Conectadas</h3>
+                        <div class="bolivia-map" id="bolivia-map">
+                            <svg viewBox="0 0 400 450" class="map-svg">
+                                <path d="M80,50 L120,30 L200,25 L280,40 L340,80 L370,150 L380,220 L360,300 L320,360 L280,400 L200,430 L120,400 L60,340 L30,260 L40,180 L60,110 Z" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+                                <circle cx="155" cy="140" r="10" fill="#3b82f6" class="map-pulse" id="map-lp"/><text x="155" y="125" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="600">La Paz</text><text x="155" y="163" text-anchor="middle" fill="#3b82f6" font-size="10" id="map-lp-count">0 equipos</text>
+                                <circle cx="280" cy="280" r="10" fill="#22c55e" class="map-pulse" id="map-sc"/><text x="280" y="265" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="600">Santa Cruz</text><text x="280" y="303" text-anchor="middle" fill="#22c55e" font-size="10" id="map-sc-count">0 equipos</text>
+                                <circle cx="240" cy="210" r="10" fill="#f97316" class="map-pulse" id="map-cb"/><text x="240" y="195" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="600">Cochabamba</text><text x="240" y="233" text-anchor="middle" fill="#f97316" font-size="10" id="map-cb-count">0 equipos</text>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Sesiones Activas</h3>
+                        <div class="table-wrapper">
+                            <table id="monitor-sessions"><thead><tr><th>IP</th><th>Sede</th><th>Conectado</th></tr></thead><tbody><tr><td colspan="3" class="empty-cell">Sin sesiones</td></tr></tbody></table>
+                        </div>
+                        <h3 class="mt-16">Feed de Actividad</h3>
+                        <div id="monitor-activity" class="activity-feed"><p class="text-muted">Sin actividad reciente</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════ SEDES ═══════════════ -->
+        <section id="screen-sedes" class="screen">
+            <div class="page-container">
+                <h2 class="page-title">Gestion de Sedes</h2>
+                <div class="card">
+                    <div class="action-bar"><button class="btn btn-primary" onclick="App.showSedeForm()">+ Nueva Sede</button></div>
+                    <div class="table-wrapper">
+                        <table id="sedes-table">
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Ciudad</th><th>Director</th><th>Email</th><th>Capacidad</th><th>Estudiantes</th><th>Ocupacion</th><th>Acciones</th></tr></thead>
+                            <tbody><tr><td colspan="9" class="empty-cell">Cargando...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-overlay" class="modal-overlay hidden" onclick="App.closeModalOutside(event)">
+        <div class="modal" id="modal-content">
+            <div class="modal-header"><h3 id="modal-title">Modal</h3><button class="modal-close" onclick="App.closeModal()">&times;</button></div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/app.js"></script>
+</body>
+</html>
