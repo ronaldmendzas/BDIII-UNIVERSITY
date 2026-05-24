@@ -887,7 +887,14 @@ enterApp() {
     },
 
     async registerMonitor() {
-        try { await fetch('/api/monitor/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ sede: this.state.sede || 'La Paz' }) }); } catch (e) { }
+        try {
+            var clientId = localStorage.getItem('unispanner_client_id') || '';
+            if (!clientId) {
+                clientId = 'client-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('unispanner_client_id', clientId);
+            }
+            await fetch('/api/monitor/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ sede: this.state.sede || 'La Paz', client_id: clientId }) });
+        } catch (e) { }
     },
 
     // ═══════════════ SEDES ═══════════════

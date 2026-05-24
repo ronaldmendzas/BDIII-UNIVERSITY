@@ -62,15 +62,17 @@ activity_log = []
 sessions_lock = threading.Lock()
 
 
-def register_session(ip, sede):
+def register_session(ip, sede, client_id=None):
     with sessions_lock:
-        for s in sessions:
-            if s['ip'] == ip:
-                s['sede'] = sede
-                s['lastActivity'] = datetime.datetime.now().isoformat()
-                return
+        if client_id:
+            for s in sessions:
+                if s.get('client_id') == client_id:
+                    s['sede'] = sede
+                    s['lastActivity'] = datetime.datetime.now().isoformat()
+                    return
         sessions.append({
             'id': str(uuid.uuid4()),
+            'client_id': client_id or str(uuid.uuid4()),
             'ip': ip,
             'sede': sede,
             'connectedAt': datetime.datetime.now().isoformat(),
@@ -780,8 +782,9 @@ def get_monitor():
 def register_monitor():
     ip = request.remote_addr or 'unknown'
     data = request.json or {}
-    register_session(ip, data.get('sede', 'La Paz'))
-    return json_resp({'success': True})
+    client_id = data.get('client_id', '')
+    register_session(ip, data.get('sede', 'La Paz'), client_id)
+    return json_resp({'success': True, 'client_id': client_id or sessions[-1]['client_id'] if sessions else str(uuid.uuid4())})
 
 
 @app.route('/api/monitor/activity', methods=['POST'])
