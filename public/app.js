@@ -103,12 +103,14 @@ enterApp() {
     },
 
     changeSede() {
+        localStorage.removeItem('unispanner_sede');
+        localStorage.removeItem('unispanner_user');
+        localStorage.removeItem('unispanner_client_id');
         const shell = document.getElementById('app-shell');
         const splash = document.getElementById('screen-splash');
         if (shell) shell.classList.add('hidden');
         if (splash) { splash.style.display = ''; splash.classList.add('active'); }
         this.state.sede = null;
-        localStorage.removeItem('unispanner_sede');
     },
 
     updateSedeBadge() {
@@ -870,7 +872,7 @@ enterApp() {
             var sessionsTbody = document.querySelector('#monitor-sessions tbody');
             if (data.sesiones && data.sesiones.length > 0) {
                 var self = this;
-                sessionsTbody.innerHTML = data.sesiones.map(function(s) { return '<tr><td>' + s.ip + '</td><td>' + self.sedeBadge(s.sede) + '</td><td>' + (s.conectadoHace || '') + '</td></tr>'; }).join('');
+                sessionsTbody.innerHTML = data.sesiones.map(function(s) { return '<tr><td>' + (s.nombre || s.ip) + '</td><td>' + self.sedeBadge(s.sede, true) + '</td><td>' + (s.conectadoHace || '') + '</td></tr>'; }).join('');
             } else {
                 sessionsTbody.innerHTML = '<tr><td colspan="3" class="empty-cell">Sin sesiones</td></tr>';
             }
@@ -889,11 +891,16 @@ enterApp() {
     async registerMonitor() {
         try {
             var clientId = localStorage.getItem('unispanner_client_id') || '';
+            var userName = localStorage.getItem('unispanner_user') || '';
             if (!clientId) {
                 clientId = 'client-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
                 localStorage.setItem('unispanner_client_id', clientId);
             }
-            await fetch('/api/monitor/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ sede: this.state.sede || 'La Paz', client_id: clientId }) });
+            if (!userName) {
+                userName = prompt('Ingresa tu nombre (para el monitor):') || 'Anonimo';
+                localStorage.setItem('unispanner_user', userName);
+            }
+            await fetch('/api/monitor/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ sede: this.state.sede || 'La Paz', client_id: clientId, nombre: userName }) });
         } catch (e) { }
     },
 

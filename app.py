@@ -62,18 +62,22 @@ activity_log = []
 sessions_lock = threading.Lock()
 
 
-def register_session(ip, sede, client_id=None):
+def register_session(ip, sede, client_id=None, nombre=None):
+    ip = ip.replace('127.0.0.1', 'local')
     with sessions_lock:
         if client_id:
             for s in sessions:
                 if s.get('client_id') == client_id:
                     s['sede'] = sede
+                    s['ip'] = ip
+                    s['nombre'] = nombre or s.get('nombre', 'Anonimo')
                     s['lastActivity'] = datetime.datetime.now().isoformat()
                     return
         sessions.append({
             'id': str(uuid.uuid4()),
             'client_id': client_id or str(uuid.uuid4()),
             'ip': ip,
+            'nombre': nombre or 'Anonimo',
             'sede': sede,
             'connectedAt': datetime.datetime.now().isoformat(),
             'lastActivity': datetime.datetime.now().isoformat()
@@ -773,7 +777,7 @@ def get_monitor():
         return json_resp({
             'equiposConectados': len(sessions),
             'sedes': sede_counts,
-            'sesiones': [{'ip': s['ip'], 'sede': s['sede'], 'conectadoHace': s.get('connectedAt', ''), 'ultimaActividad': s.get('lastActivity', '')} for s in sessions],
+            'sesiones': [{'nombre': s.get('nombre', 'Anonimo'), 'ip': s['ip'], 'sede': s['sede'], 'conectadoHace': s.get('connectedAt', ''), 'ultimaActividad': s.get('lastActivity', '')} for s in sessions],
             'actividad': activity_log[:20]
         })
 
@@ -783,7 +787,8 @@ def register_monitor():
     ip = request.remote_addr or 'unknown'
     data = request.json or {}
     client_id = data.get('client_id', '')
-    register_session(ip, data.get('sede', 'La Paz'), client_id)
+    nombre = data.get('nombre', 'Anonimo')
+    register_session(ip, data.get('sede', 'La Paz'), client_id, nombre)
     return json_resp({'success': True, 'client_id': client_id or sessions[-1]['client_id'] if sessions else str(uuid.uuid4())})
 
 
