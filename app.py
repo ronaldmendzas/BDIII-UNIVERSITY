@@ -792,6 +792,14 @@ def register_monitor():
     return json_resp({'success': True, 'client_id': client_id or sessions[-1]['client_id'] if sessions else str(uuid.uuid4())})
 
 
+@app.route('/api/monitor/clear', methods=['POST'])
+def clear_monitor():
+    with sessions_lock:
+        sessions.clear()
+        activity_log.clear()
+    return json_resp({'success': True})
+
+
 @app.route('/api/monitor/activity', methods=['POST'])
 def log_monitor_activity():
     data = request.json or {}

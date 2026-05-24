@@ -904,6 +904,15 @@ enterApp() {
         } catch (e) { }
     },
 
+    async clearSessions() {
+        if (!confirm('Limpiar todas las sesiones del monitor?')) return;
+        try {
+            await fetch('/api/monitor/clear', { method: 'POST', headers: {'Content-Type': 'application/json'} });
+            this.toast('Sesiones limpiadas', 'success');
+            this.loadMonitor();
+        } catch (e) { }
+    },
+
     // ═══════════════ SEDES ═══════════════
     async loadSedes() {
         try {
