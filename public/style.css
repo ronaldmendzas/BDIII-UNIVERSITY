@@ -548,23 +548,23 @@ textarea.input { min-height: 70px; resize: vertical; }
 
 /* ═══════════════ SQL BOX ═══════════════ */
 .sql-box {
-    background: #1a1033; border: 1px solid #3d2d5c; border-radius: var(--radius);
+    background: #1e1030; border: 1px solid #3d2d5c; border-radius: var(--radius);
     padding: 14px; margin-top: 14px;
     position: relative; overflow: hidden;
 }
 .sql-box::before {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(131,58,180,0.05), rgba(225,48,108,0.05));
+    background: linear-gradient(135deg, rgba(131,58,180,0.08), rgba(225,48,108,0.08));
 }
-.sql-box h4 { font-size: 12px; color: #c084fc; margin-bottom: 6px; font-weight: 500; position: relative; }
+.sql-box h4 { font-size: 12px; color: #d8b4fe; margin-bottom: 6px; font-weight: 600; position: relative; }
 .sql-box pre {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px;
-    background: linear-gradient(135deg, #e0aaff, #ff9cft, #fbbf24);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: #d8b4fe; overflow-x: auto; white-space: pre-wrap; line-height: 1.5;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px;
+    color: #e0c8ff; overflow-x: auto; white-space: pre-wrap; line-height: 1.6;
     position: relative;
 }
+.sql-box pre .kw { color: #ff9cf5; }
+.sql-box pre .tbl { color: #7dd3fc; }
+.sql-box pre .str { color: #86efac; }
 
 /* ═══════════════ COMPARISON ═══════════════ */
 .comparison-table { font-size: 12.5px; }
@@ -573,9 +573,11 @@ textarea.input { min-height: 70px; resize: vertical; }
 
 /* ═══════════════ MONITOR ═══════════════ */
 .monitor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.map-svg { width: 100%; max-width: 380px; }
-.map-pulse { animation: mapPulse 2s ease infinite; }
-@keyframes mapPulse { 0%, 100% { r: 10; opacity: 0.7; } 50% { r: 14; opacity: 0.35; } }
+.map-svg { width: 100%; max-width: 500px; }
+.map-pulse { animation: mapPulse 2.5s ease-in-out infinite; }
+@keyframes mapPulse { 0%, 100% { r: 18; opacity: 0.3; } 50% { r: 22; opacity: 0.15; } }
+.map-dot-active { animation: dotPulse 2s ease-in-out infinite; }
+@keyframes dotPulse { 0%, 100% { r: 10; } 50% { r: 12; } }
 .activity-feed { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
 .activity-item {
     padding: 6px 10px; background: var(--bg-tertiary); border-radius: 6px;

@@ -849,9 +849,24 @@ enterApp() {
             var data = await this.api('/api/monitor');
             if (!data) return;
             document.getElementById('monitor-equipos').textContent = data.equiposConectados;
-            document.getElementById('map-lp-count').textContent = (data.sedes && data.sedes['La Paz'] || 0) + ' equipos';
-            document.getElementById('map-sc-count').textContent = (data.sedes && data.sedes['Santa Cruz'] || 0) + ' equipos';
-            document.getElementById('map-cb-count').textContent = (data.sedes && data.sedes['Cochabamba'] || 0) + ' equipos';
+            var lpCount = data.sedes && data.sedes['La Paz'] || 0;
+            var scCount = data.sedes && data.sedes['Santa Cruz'] || 0;
+            var cbCount = data.sedes && data.sedes['Cochabamba'] || 0;
+            document.getElementById('map-lp-count').textContent = lpCount + ' equipo' + (lpCount !== 1 ? 's' : '');
+            document.getElementById('map-sc-count').textContent = scCount + ' equipo' + (scCount !== 1 ? 's' : '');
+            document.getElementById('map-cb-count').textContent = cbCount + ' equipo' + (cbCount !== 1 ? 's' : '');
+            var lpDot = document.getElementById('map-lp-dot');
+            var scDot = document.getElementById('map-sc-dot');
+            var cbDot = document.getElementById('map-cb-dot');
+            var lpRing = document.getElementById('map-lp-ring');
+            var scRing = document.getElementById('map-sc-ring');
+            var cbRing = document.getElementById('map-cb-ring');
+            if (lpDot) { lpDot.setAttribute('opacity', lpCount > 0 ? '1' : '0.2'); lpDot.setAttribute('filter', lpCount > 0 ? 'url(#glow-lp)' : ''); }
+            if (scDot) { scDot.setAttribute('opacity', scCount > 0 ? '1' : '0.2'); scDot.setAttribute('filter', scCount > 0 ? 'url(#glow-sc)' : ''); }
+            if (cbDot) { cbDot.setAttribute('opacity', cbCount > 0 ? '1' : '0.2'); cbDot.setAttribute('filter', cbCount > 0 ? 'url(#glow-cb)' : ''); }
+            if (lpRing) { lpRing.setAttribute('stroke-dasharray', lpCount > 0 ? 'none' : '3,3'); lpRing.setAttribute('stroke-width', lpCount > 0 ? '2.5' : '2'); }
+            if (scRing) { scRing.setAttribute('stroke-dasharray', scCount > 0 ? 'none' : '3,3'); scRing.setAttribute('stroke-width', scCount > 0 ? '2.5' : '2'); }
+            if (cbRing) { cbRing.setAttribute('stroke-dasharray', cbCount > 0 ? 'none' : '3,3'); cbRing.setAttribute('stroke-width', cbCount > 0 ? '2.5' : '2'); }
             var sessionsTbody = document.querySelector('#monitor-sessions tbody');
             if (data.sesiones && data.sesiones.length > 0) {
                 var self = this;
