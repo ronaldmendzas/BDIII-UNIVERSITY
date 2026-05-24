@@ -272,6 +272,63 @@ Para detener el servidor, ve a la terminal donde esta corriendo y presiona `Ctrl
 
 ---
 
+## Paso 9: Conectar otros compañeros en la red local
+
+El sistema tiene un Monitor en Vivo que muestra qué sedes están conectadas. Para que otros compañeros puedan ver y usar el sistema desde sus computadoras:
+
+### 9.1 Obtener tu IP local
+
+Abre una terminal (PowerShell o CMD) en la computadora donde corre el servidor y escribe:
+
+```
+ipconfig
+```
+
+Busca la linea que dice **IPv4 Address**. Vas a ver algo como:
+
+```
+IPv4 Address. . . . . . . . . . . : 192.168.100.8
+```
+
+Ese número es **tu IP local**. Anótalo.
+
+### 9.2 Dar acceso a otros
+
+Diles a tus compañeros que abran su navegador y escriban:
+
+```
+http://TU_IP_LOCAL:3000
+```
+
+Por ejemplo, si tu IP es `192.168.100.8`, tus compañeros abren:
+
+```
+http://192.168.100.8:3000
+```
+
+**Importante:** Todos deben estar conectados a la **misma red WiFi**.
+
+### 9.3 Seleccionar la sede correcta
+
+Cada persona debe seleccionar su sede en la pantalla de inicio:
+
+- El que esta en **La Paz** selecciona "La Paz"
+- El que esta en **Santa Cruz** selecciona "Santa Cruz"
+- El que esta en **Cochabamba** selecciona "Cochabamba"
+
+El Monitor en Vivo va a mostrar cuántos equipos hay conectados por sede y va a actualizar en tiempo real.
+
+### 9.4 Si no funciona la conexion
+
+Si los compañeros no pueden acceder a `http://TU_IP:3000`:
+
+1. **Verifica que esten en la misma red WiFi** - todos deben estar en el mismo WiFi
+2. **Verifica el firewall** - en Windows, busca "Firewall de Windows" y agrega una regla que permita el puerto 3000, o temporalmente desactiva el firewall
+3. **Prueba con ping** - los compañeros abren CMD y escriben `ping 192.168.100.8` (tu IP). Si responde, la red funciona
+4. **Verifica que el servidor este corriendo** - en tu terminal debe decir "Servidor corriendo en http://0.0.0.0:3000"
+
+---
+
 ## Resumen rapido de lo que hay que cambiar
 
 | Que cambiar          | Donde                               | Que pones                                           |
