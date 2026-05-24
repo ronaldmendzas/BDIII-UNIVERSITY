@@ -263,6 +263,90 @@
                 <h2 class="page-title">Visualizacion de Fragmentacion</h2>
 
                 <div class="card mb-24">
+                    <h3>Modelo Entidad-Relacion (MER) Original</h3>
+                    <p class="text-muted mb-16">Tablas originales antes de la fragmentacion. La tabla Estudiante contiene todos los atributos juntos.</p>
+                    <div class="mer-container">
+                        <svg viewBox="0 0 900 520" class="mer-svg">
+                            <!-- Estudiante Original (centro) -->
+                            <rect x="310" y="10" width="280" height="190" rx="6" fill="var(--bg-secondary)" stroke="var(--ig-purple)" stroke-width="2"/>
+                            <text x="450" y="30" text-anchor="middle" fill="var(--ig-purple)" font-size="13" font-weight="700">Estudiante (ORIGINAL)</text>
+                            <line x1="320" y1="38" x2="580" y2="38" stroke="var(--lp-border)" stroke-width="1"/>
+                            <text x="320" y="54" fill="var(--ig-purple)" font-size="10" font-weight="700">estudiante_id (PK)</text>
+                            <text x="320" y="68" fill="var(--text-primary)" font-size="10">nombre, apellido, ci</text>
+                            <text x="320" y="82" fill="var(--text-primary)" font-size="10">carrera, semestre, email</text>
+                            <text x="320" y="96" fill="var(--text-primary)" font-size="10">telefono, estado, sede_id</text>
+                            <line x1="320" y1="104" x2="580" y2="104" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="3,3"/>
+                            <text x="320" y="118" fill="var(--ig-pink)" font-size="10" font-weight="600">--- Atributos Personales ---</text>
+                            <text x="320" y="132" fill="var(--text-secondary)" font-size="10">fecha_nacimiento, direccion</text>
+                            <text x="320" y="146" fill="var(--text-secondary)" font-size="10">genero, fecha_registro</text>
+                            <text x="320" y="160" fill="var(--ig-pink)" font-size="10" font-weight="600">--- Atributos Academicos ---</text>
+                            <text x="320" y="174" fill="var(--text-secondary)" font-size="10">semestre_actual, gestion_ingreso</text>
+                            <text x="320" y="188" fill="var(--text-secondary)" font-size="10">promedio_general</text>
+
+                            <!-- Flecha: Estudiante se fragmenta -->
+                            <line x1="450" y1="200" x2="450" y2="225" stroke="var(--ig-pink)" stroke-width="2"/>
+                            <text x="450" y="220" text-anchor="middle" fill="var(--ig-pink)" font-size="10" font-weight="700">SE FRAGMENTA</text>
+
+                            <!-- Fragmentacion Horizontal -->
+                            <rect x="80" y="235" width="200" height="110" rx="6" fill="var(--lp-soft)" stroke="var(--lp-color)" stroke-width="2"/>
+                            <text x="180" y="255" text-anchor="middle" fill="var(--lp-color)" font-size="12" font-weight="700">Fragmentacion Horizontal</text>
+                            <line x1="90" y1="262" x2="270" y2="262" stroke="var(--lp-border)" stroke-width="1"/>
+                            <text x="90" y="278" fill="var(--text-primary)" font-size="10">Estudiantes_LaPaz</text>
+                            <text x="90" y="293" fill="var(--text-primary)" font-size="10">Estudiantes_SantaCruz</text>
+                            <text x="90" y="308" fill="var(--text-primary)" font-size="10">Estudiantes_Cochabamba</text>
+                            <text x="90" y="328" fill="var(--lp-color)" font-size="9" font-weight="600">WHERE sede_id = La Paz / SC / CB</text>
+
+                            <!-- Flecha central -->
+                            <line x1="290" y1="290" x2="380" y2="290" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="3,3"/>
+                            <text x="335" y="285" text-anchor="middle" fill="var(--text-muted)" font-size="9">/divide filas/</text>
+
+                            <!-- Fragmentacion Vertical -->
+                            <rect x="390" y="235" width="200" height="110" rx="6" fill="var(--sc-soft)" stroke="var(--sc-color)" stroke-width="2"/>
+                            <text x="490" y="255" text-anchor="middle" fill="var(--sc-color)" font-size="12" font-weight="700">Fragmentacion Vertical</text>
+                            <line x1="400" y1="262" x2="580" y2="262" stroke="var(--sc-border)" stroke-width="1"/>
+                            <text x="400" y="278" fill="var(--text-primary)" font-size="10">Estudiante_Personal</text>
+                            <text x="400" y="293" fill="var(--text-secondary)" font-size="9">(ci, nacimiento, direccion...)</text>
+                            <text x="400" y="310" fill="var(--text-primary)" font-size="10">Estudiante_Academico</text>
+                            <text x="400" y="325" fill="var(--text-secondary)" font-size="9">(carrera, semestre, promedio...)</text>
+
+                            <!-- Tablas relacionadas -->
+                            <rect x="630" y="235" width="240" height="110" rx="6" fill="var(--bg-tertiary)" stroke="var(--border-color)" stroke-width="1.5"/>
+                            <text x="750" y="255" text-anchor="middle" fill="var(--text-primary)" font-size="12" font-weight="700">Tablas Relacionadas</text>
+                            <text x="640" y="275" fill="var(--text-secondary)" font-size="10">Sedes (sede_id)</text>
+                            <text x="640" y="290" fill="var(--text-secondary)" font-size="10">Docentes (docente_id)</text>
+                            <text x="640" y="305" fill="var(--text-secondary)" font-size="10">Materias (materia_id)</text>
+                            <text x="640" y="320" fill="var(--text-secondary)" font-size="10">Inscripciones, Notas</text>
+                            <text x="640" y="335" fill="var(--text-muted)" font-size="9">Relaciones: FK estudiante_id, sede_id</text>
+
+                            <!-- Flechas de relacion -->
+                            <line x1="590" y1="290" x2="630" y2="290" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line x1="580" y1="100" x2="630" y2="255" stroke="var(--border-color)" stroke-width="1" stroke-dasharray="3,3"/>
+
+                            <!-- Reconstruccion -->
+                            <rect x="150" y="375" width="600" height="130" rx="6" fill="var(--bg-secondary)" stroke="var(--cb-color)" stroke-width="2"/>
+                            <text x="450" y="398" text-anchor="middle" fill="var(--cb-color)" font-size="13" font-weight="700">Reconstruccion (Proceso Inverso)</text>
+                            <line x1="160" y1="406" x2="740" y2="406" stroke="var(--cb-border)" stroke-width="1"/>
+                            <!-- Horizontal -->
+                            <rect x="170" y="416" width="260" height="70" rx="4" fill="var(--lp-soft)" stroke="var(--lp-color)" stroke-width="1.5"/>
+                            <text x="300" y="436" text-anchor="middle" fill="var(--lp-color)" font-size="11" font-weight="700">UNION ALL</text>
+                            <text x="180" y="452" fill="var(--text-primary)" font-size="9.5">Estudiantes_LaPaz</text>
+                            <text x="180" y="466" fill="var(--text-primary)" font-size="9.5">UNION ALL Estudiantes_SantaCruz</text>
+                            <text x="180" y="480" fill="var(--text-primary)" font-size="9.5">UNION ALL Estudiantes_Cochabamba</text>
+                            <!-- Vertical -->
+                            <rect x="470" y="416" width="260" height="70" rx="4" fill="var(--sc-soft)" stroke="var(--sc-color)" stroke-width="1.5"/>
+                            <text x="600" y="436" text-anchor="middle" fill="var(--sc-color)" font-size="11" font-weight="700">JOIN</text>
+                            <text x="480" y="452" fill="var(--text-primary)" font-size="9.5">Estudiante_Personal</text>
+                            <text x="480" y="466" fill="var(--text-primary)" font-size="9.5">JOIN Estudiante_Academico</text>
+                            <text x="480" y="480" fill="var(--text-secondary)" font-size="9.5">ON personal.estudiante_id = academico.estudiante_id</text>
+
+                            <!-- Flechas desde fragmentos hacia reconstruccion -->
+                            <line x1="180" y1="345" x2="300" y2="375" stroke="var(--lp-color)" stroke-width="1.5" marker-end="none"/>
+                            <line x1="490" y1="345" x2="600" y2="375" stroke="var(--sc-color)" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="card mb-24">
                     <h3>Seccion A - Fragmentacion Horizontal por Sede Geografica</h3>
                     <p class="text-muted mb-16">Los datos se dividen por ciudad. Cada sede tiene su propio fragmento independiente.</p>
                     <div class="frag-diagram">
