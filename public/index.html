@@ -145,7 +145,7 @@
                             <option value="5">Semestre 5</option><option value="6">Semestre 6</option>
                             <option value="7">Semestre 7</option><option value="8">Semestre 8</option>
                         </select>
-                        <button class="btn btn-primary" onclick="App.showEstudianteForm()">+ Nuevo Estudiante</button>
+                        <button class="btn btn-primary" data-permission="write" onclick="App.showEstudianteForm()">+ Nuevo Estudiante</button>
                     </div>
                     <div class="table-wrapper">
                         <table id="estudiantes-table">
@@ -184,13 +184,14 @@
         <section id="screen-docentes" class="screen">
             <div class="page-container">
                 <h2 class="page-title">Gestion de Docentes</h2>
+                <div id="docentes-readonly-notice" class="readonly-notice hidden">Solo lectura - Solo la Sede Central (Cochabamba) puede modificar docentes</div>
                 <div class="card">
                     <div class="action-bar">
                         <select id="doc-filter-sede" class="input" onchange="App.loadDocentes()">
                             <option value="">Todas las sedes</option><option value="LP">La Paz</option>
                             <option value="SC">Santa Cruz</option><option value="CB">Cochabamba</option>
                         </select>
-                        <button class="btn btn-primary" onclick="App.showDocenteForm()">+ Nuevo Docente</button>
+                        <button class="btn btn-primary" data-permission="central" onclick="App.showDocenteForm()">+ Nuevo Docente</button>
                     </div>
                     <div class="table-wrapper">
                         <table id="docentes-table">
@@ -206,6 +207,7 @@
         <section id="screen-materias" class="screen">
             <div class="page-container">
                 <h2 class="page-title">Gestion de Materias</h2>
+                <div id="materias-readonly-notice" class="readonly-notice hidden">Solo lectura - Solo la Sede Central (Cochabamba) puede modificar materias</div>
                 <div class="card">
                     <div class="action-bar">
                         <select id="mat-filter-sede" class="input" onchange="App.loadMaterias()">
@@ -213,7 +215,7 @@
                             <option value="SC">Santa Cruz</option><option value="CB">Cochabamba</option>
                         </select>
                         <select id="mat-filter-carrera" class="input" onchange="App.loadMaterias()"><option value="">Todas las carreras</option></select>
-                        <button class="btn btn-primary" onclick="App.showMateriaForm()">+ Nueva Materia</button>
+                        <button class="btn btn-primary" data-permission="central" onclick="App.showMateriaForm()">+ Nueva Materia</button>
                     </div>
                     <div class="table-wrapper">
                         <table id="materias-table">
@@ -229,8 +231,9 @@
         <section id="screen-inscripciones" class="screen">
             <div class="page-container">
                 <h2 class="page-title">Inscripciones</h2>
+                <div id="inscripciones-readonly-notice" class="readonly-notice hidden"></div>
                 <div class="card">
-                    <div class="action-bar"><button class="btn btn-primary" onclick="App.showInscripcionForm()">+ Nueva Inscripcion</button></div>
+                    <div class="action-bar"><button class="btn btn-primary" data-permission="write" onclick="App.showInscripcionForm()">+ Nueva Inscripcion</button></div>
                     <div class="table-wrapper">
                         <table id="inscripciones-table">
                             <thead><tr><th>ID</th><th>Estudiante</th><th>Materia</th><th>Sede</th><th>Gestion</th><th>Semestre</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -245,8 +248,9 @@
         <section id="screen-notas" class="screen">
             <div class="page-container">
                 <h2 class="page-title">Notas</h2>
+                <div id="notas-readonly-notice" class="readonly-notice hidden"></div>
                 <div class="card">
-                    <div class="action-bar"><button class="btn btn-primary" onclick="App.showNotaForm()">+ Registrar Nota</button></div>
+                    <div class="action-bar"><button class="btn btn-primary" data-permission="write" onclick="App.showNotaForm()">+ Registrar Nota</button></div>
                     <div class="table-wrapper">
                         <table id="notas-table">
                             <thead><tr><th>Estudiante</th><th>Materia</th><th>Sede</th><th>Nota 1</th><th>Nota 2</th><th>Nota 3</th><th>Promedio</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -470,7 +474,7 @@
                         <h3>Sesiones Activas</h3>
                         <button class="btn btn-danger btn-sm" onclick="App.clearSessions()" style="margin-bottom:8px;">Limpiar Sesiones</button>
                         <div class="table-wrapper">
-                            <table id="monitor-sessions"><thead><tr><th>Usuario</th><th>Sede</th><th>Conectado</th></tr></thead><tbody><tr><td colspan="3" class="empty-cell">Sin sesiones</td></tr></tbody></table>
+                            <table id="monitor-sessions"><thead><tr><th>Usuario</th><th>IP</th><th>Sede</th><th>Conectado</th></tr></thead><tbody><tr><td colspan="4" class="empty-cell">Sin sesiones</td></tr></tbody></table>
                         </div>
                         <h3 class="mt-16">Feed de Actividad</h3>
                         <div id="monitor-activity" class="activity-feed"><p class="text-muted">Sin actividad reciente</p></div>
@@ -483,8 +487,9 @@
         <section id="screen-sedes" class="screen">
             <div class="page-container">
                 <h2 class="page-title">Gestion de Sedes</h2>
+                <div id="sedes-readonly-notice" class="readonly-notice hidden">Solo lectura - Solo la Sede Central (Cochabamba) puede modificar sedes</div>
                 <div class="card">
-                    <div class="action-bar"><button class="btn btn-primary" onclick="App.showSedeForm()">+ Nueva Sede</button></div>
+                    <div class="action-bar"><button class="btn btn-primary" data-permission="central" onclick="App.showSedeForm()">+ Nueva Sede</button></div>
                     <div class="table-wrapper">
                         <table id="sedes-table">
                             <thead><tr><th>ID</th><th>Nombre</th><th>Ciudad</th><th>Director</th><th>Email</th><th>Capacidad</th><th>Estudiantes</th><th>Ocupacion</th><th>Acciones</th></tr></thead>

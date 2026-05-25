@@ -599,6 +599,14 @@ textarea.input { min-height: 70px; resize: vertical; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
 
 /* ═══════════════ SPECIAL ═══════════════ */
+.readonly-notice {
+    background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px;
+    padding: 10px 16px; margin-bottom: 16px; color: #92400e; font-size: 13px;
+    font-weight: 600; display: flex; align-items: center; gap: 8px;
+}
+.readonly-notice.hidden { display: none; }
+.sede-label-central { font-size: 11px; color: #f97316; font-weight: 700; margin-left: 4px; }
+.sede-label-hija { font-size: 11px; color: #6b7280; font-weight: 600; margin-left: 4px; }
 .nota-aprobado { color: #1a7a14; font-weight: 600; }
 .nota-reprobado { color: #c31425; font-weight: 600; }
 .progress-bar-bg {

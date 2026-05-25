@@ -25,6 +25,40 @@ const App = {
     sedeColors: { 'La Paz': '#3b82f6', 'Santa Cruz': '#22c55e', 'Cochabamba': '#f97316' },
     sedeDimColors: { 'La Paz': '#eff6ff', 'Santa Cruz': '#f0fdf4', 'Cochabamba': '#fff7ed' },
 
+    isCentral() {
+        return this.state.sede === 'Cochabamba';
+    },
+
+applyPermissions() {
+        var central = this.isCentral();
+        var btnsCentral = document.querySelectorAll('[data-permission="central"]');
+        var btnsWrite = document.querySelectorAll('[data-permission="write"]');
+        btnsCentral.forEach(function(b) { b.style.display = central ? '' : 'none'; });
+        btnsWrite.forEach(function(b) { b.style.display = ''; });
+        var notices = ['docentes-readonly-notice', 'materias-readonly-notice', 'sedes-readonly-notice'];
+        notices.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) { if (central) { el.classList.add('hidden'); } else { el.classList.remove('hidden'); } }
+        });
+        var insNotice = document.getElementById('inscripciones-readonly-notice');
+        var notasNotice = document.getElementById('notas-readonly-notice');
+        if (insNotice) { if (central) { insNotice.classList.add('hidden'); } else { insNotice.classList.remove('hidden'); insNotice.textContent = 'Solo puedes crear inscripciones de tu sede (' + this.state.sede + ')'; } }
+        if (notasNotice) { if (central) { notasNotice.classList.add('hidden'); } else { notasNotice.classList.remove('hidden'); notasNotice.textContent = 'Solo puedes registrar notas de tu sede (' + this.state.sede + ')'; } }
+        var badge = document.getElementById('sede-badge');
+        if (badge) { badge.textContent = this.state.sede + (central ? ' (Central)' : ' (Hija)'); }
+        var nacionalBtn = document.querySelector('.tab-btn-nacional');
+        if (nacionalBtn) { nacionalBtn.style.display = central ? '' : 'none'; }
+        var sedeTabMap = { 'La Paz': 'lapaz', 'Santa Cruz': 'santacruz', 'Cochabamba': 'cochabamba' };
+        document.querySelectorAll('.tab-btn[data-sede]').forEach(function(btn) {
+            var tabSede = btn.getAttribute('data-sede');
+            if (!central && tabSede !== sedeTabMap[App.state.sede]) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = '';
+            }
+        });
+    },
+
     init() {
         this.checkConnection();
         this._connInterval = setInterval(function() { App.checkConnection(); }, 15000);
@@ -98,6 +132,7 @@ enterApp() {
         if (shell) shell.classList.remove('hidden');
         this.updateSedeBadge();
         this.loadOptions();
+        this.applyPermissions();
         this.navigate('dashboard');
         this.registerMonitor();
     },
@@ -116,7 +151,7 @@ enterApp() {
     updateSedeBadge() {
         const badge = document.getElementById('sede-badge');
         if (badge) {
-            badge.textContent = this.state.sede;
+            badge.textContent = this.state.sede + (this.isCentral() ? ' (Central)' : ' (Hija)');
             badge.style.background = this.sedeDimColors[this.state.sede];
             badge.style.color = this.sedeColors[this.state.sede];
             badge.style.borderColor = this.sedeColors[this.state.sede];
@@ -131,6 +166,7 @@ enterApp() {
         if (el) el.classList.add('active');
         const navBtn = document.querySelector('.nav-btn[data-screen="' + screen + '"]');
         if (navBtn) navBtn.classList.add('active');
+        this.applyPermissions();
         this.loadScreen(screen);
     },
 
@@ -369,7 +405,12 @@ enterApp() {
 
     // ═══════════════ ESTUDIANTES ═══════════════
     async loadEstudiantes() {
-        await this.switchEstudianteTab(this.state.estudianteTab);
+        if (!this.isCentral()) {
+            var forcedTab = this.state.sedeKey || 'lapaz';
+            this.switchEstudianteTab(forcedTab);
+        } else {
+            await this.switchEstudianteTab(this.state.estudianteTab);
+        }
     },
 
     switchEstudianteTab(sede) {
@@ -448,7 +489,11 @@ enterApp() {
     showEstudianteForm(estudiante) {
         var isEdit = !!estudiante;
         var sede = this.state.estudianteTab;
+        if (!this.isCentral()) {
+            sede = this.state.sedeKey || 'lapaz';
+        }
         var title = isEdit ? 'Editar Estudiante' : 'Nuevo Estudiante';
+        var sedeField = this.isCentral() ? '' : '<div class="form-group"><label>Sede</label><input type="text" class="input input-full" value="' + this.state.sede + '" readonly></div>';
         var body = '<div class="form-grid">' +
             '<div class="form-group"><label>Nombre</label><input type="text" id="f-est-nombre" class="input input-full" value="' + (estudiante ? estudiante.nombre || '' : '') + '"></div>' +
             '<div class="form-group"><label>Apellido</label><input type="text" id="f-est-apellido" class="input input-full" value="' + (estudiante ? estudiante.apellido || '' : '') + '"></div>' +
@@ -458,6 +503,7 @@ enterApp() {
             '<div class="form-group"><label>Email</label><input type="email" id="f-est-email" class="input input-full" value="' + (estudiante ? estudiante.email || '' : '') + '"></div>' +
             '<div class="form-group"><label>Telefono</label><input type="text" id="f-est-telefono" class="input input-full" value="' + (estudiante ? estudiante.telefono || '' : '') + '"></div>' +
             '<div class="form-group"><label>Estado</label><select id="f-est-estado" class="input input-full"><option value="ACTIVO"' + ((!estudiante || estudiante.estado === 'ACTIVO') ? ' selected' : '') + '>ACTIVO</option><option value="INACTIVO"' + (estudiante && estudiante.estado === 'INACTIVO' ? ' selected' : '') + '>INACTIVO</option></select></div>' +
+            (this.isCentral() ? '<div class="form-group"><label>Sede</label>' + this.sedeSelectHtml('f-est-sede-hidden', estudiante ? estudiante.sede_origen || estudiante.sede_id || 'LP' : 'LP') + '</div>' : '') +
             '</div><div class="modal-actions"><button class="btn btn-secondary" onclick="App.closeModal()">Cancelar</button>' +
             '<button class="btn btn-primary" onclick="App.saveEstudiante(\'' + sede + '\', ' + (isEdit ? "'" + estudiante.estudiante_id + "'" : 'null') + ')">' + (isEdit ? 'Actualizar' : 'Crear') + '</button></div>';
         this.openModal(title, body);
@@ -579,8 +625,10 @@ enterApp() {
         var tbody = document.querySelector('#docentes-table tbody');
         if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="empty-cell">Sin docentes</td></tr>'; return; }
         var self = this;
+        var canEdit = this.isCentral();
         tbody.innerHTML = data.map(function(d) {
-            return '<tr><td title="' + d.docente_id + '">' + d.docente_id.substring(0, 8) + '...</td><td>' + (d.nombre || '') + '</td><td>' + (d.apellido || '') + '</td><td>' + (d.ci || '') + '</td><td>' + (d.email || '') + '</td><td>' + (d.especialidad || '') + '</td><td>' + self.sedeBadge(d.sede_id, true) + '</td><td>' + self.statusBadge(d.estado) + '</td><td><button class="btn btn-sm btn-secondary" onclick="App.editDocente(\'' + d.docente_id + '\')">Editar</button> <button class="btn btn-sm btn-danger" onclick="App.deleteDocente(\'' + d.docente_id + '\')">Eliminar</button></td></tr>';
+            var actions = canEdit ? '<button class="btn btn-sm btn-secondary" onclick="App.editDocente(\'' + d.docente_id + '\')">Editar</button> <button class="btn btn-sm btn-danger" onclick="App.deleteDocente(\'' + d.docente_id + '\')">Eliminar</button>' : '<span class="text-muted" style="font-size:12px;">Solo lectura</span>';
+            return '<tr><td title="' + d.docente_id + '">' + d.docente_id.substring(0, 8) + '...</td><td>' + (d.nombre || '') + '</td><td>' + (d.apellido || '') + '</td><td>' + (d.ci || '') + '</td><td>' + (d.email || '') + '</td><td>' + (d.especialidad || '') + '</td><td>' + self.sedeBadge(d.sede_id, true) + '</td><td>' + self.statusBadge(d.estado) + '</td><td>' + actions + '</td></tr>';
         }).join('');
     },
 
@@ -635,8 +683,10 @@ enterApp() {
         var tbody = document.querySelector('#materias-table tbody');
         if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="empty-cell">Sin materias</td></tr>'; return; }
         var self = this;
+        var canEdit = this.isCentral();
         tbody.innerHTML = data.map(function(m) {
-            return '<tr><td title="' + m.materia_id + '">' + m.materia_id.substring(0, 8) + '...</td><td>' + (m.nombre || '') + '</td><td>' + (m.codigo || '') + '</td><td>' + (m.carrera || '') + '</td><td>' + (m.semestre || '') + '</td><td>' + (m.creditos || '') + '</td><td>' + (m.docente || '') + '</td><td>' + self.sedeBadge(m.sede_id, true) + '</td><td><button class="btn btn-sm btn-danger" onclick="App.deleteMateria(\'' + m.materia_id + '\')">Eliminar</button></td></tr>';
+            var actions = canEdit ? '<button class="btn btn-sm btn-danger" onclick="App.deleteMateria(\'' + m.materia_id + '\')">Eliminar</button>' : '<span class="text-muted" style="font-size:12px;">Solo lectura</span>';
+            return '<tr><td title="' + m.materia_id + '">' + m.materia_id.substring(0, 8) + '...</td><td>' + (m.nombre || '') + '</td><td>' + (m.codigo || '') + '</td><td>' + (m.carrera || '') + '</td><td>' + (m.semestre || '') + '</td><td>' + (m.creditos || '') + '</td><td>' + (m.docente || '') + '</td><td>' + self.sedeBadge(m.sede_id, true) + '</td><td>' + actions + '</td></tr>';
         }).join('');
     },
 
@@ -672,12 +722,17 @@ enterApp() {
     async loadInscripciones() {
         try {
             var results = await Promise.allSettled([this.api('/api/inscripciones'), this.api('/api/estudiantes/nacional'), this.api('/api/materias')]);
-            this.state.inscripciones = Array.isArray(results[0].value) ? results[0].value : [];
+            var inscripciones = Array.isArray(results[0].value) ? results[0].value : [];
             var est = (results[1].status === 'fulfilled' && Array.isArray(results[1].value)) ? results[1].value : [];
             var mat = (results[2].status === 'fulfilled' && Array.isArray(results[2].value)) ? results[2].value : [];
             this.state._estMap = {}; est.forEach(function(e) { this.state._estMap[e.estudiante_id] = e.nombre + ' ' + e.apellido; }.bind(this));
             this.state._matMap = {}; mat.forEach(function(m) { this.state._matMap[m.materia_id] = m.nombre; }.bind(this));
-            this.renderInscripcionesTable(this.state.inscripciones);
+            if (!this.isCentral()) {
+                var sedeId = this.sedeIds[this.state.sede] || '';
+                inscripciones = inscripciones.filter(function(i) { return App.sedeMatch(i.sede_id, sedeId); });
+            }
+            this.state.inscripciones = inscripciones;
+            this.renderInscripcionesTable(inscripciones);
         } catch (e) { }
     },
 
@@ -685,8 +740,10 @@ enterApp() {
         var tbody = document.querySelector('#inscripciones-table tbody');
         if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-cell">Sin inscripciones</td></tr>'; return; }
         var self = this;
+        var central = this.isCentral();
         tbody.innerHTML = data.map(function(i) {
-            return '<tr><td title="' + i.inscripcion_id + '">' + i.inscripcion_id.substring(0, 8) + '...</td><td>' + (self.state._estMap[i.estudiante_id] || i.estudiante_id.substring(0, 8)) + '</td><td>' + (self.state._matMap[i.materia_id] || i.materia_id.substring(0, 8)) + '</td><td>' + self.sedeBadge(i.sede_id, true) + '</td><td>' + (i.gestion || '') + '</td><td>' + (i.semestre || '') + '</td><td>' + self.statusBadge(i.estado) + '</td><td><button class="btn btn-sm btn-danger" onclick="App.deleteInscripcion(\'' + i.inscripcion_id + '\')">Eliminar</button></td></tr>';
+            var actions = '<button class="btn btn-sm btn-danger" onclick="App.deleteInscripcion(\'' + i.inscripcion_id + '\')">Eliminar</button>';
+            return '<tr><td title="' + i.inscripcion_id + '">' + i.inscripcion_id.substring(0, 8) + '...</td><td>' + (self.state._estMap[i.estudiante_id] || i.estudiante_id.substring(0, 8)) + '</td><td>' + (self.state._matMap[i.materia_id] || i.materia_id.substring(0, 8)) + '</td><td>' + self.sedeBadge(i.sede_id, true) + '</td><td>' + (i.gestion || '') + '</td><td>' + (i.semestre || '') + '</td><td>' + self.statusBadge(i.estado) + '</td><td>' + actions + '</td></tr>';
         }).join('');
     },
 
@@ -696,10 +753,20 @@ enterApp() {
         try { mat = await this.api('/api/materias'); } catch(e) {}
         if (!Array.isArray(est)) est = [];
         if (!Array.isArray(mat)) mat = [];
+        var central = this.isCentral();
+        if (!central) {
+            var sedeId = this.sedeIds[this.state.sede] || '';
+            if (this.state.sede === 'La Paz') sedeId = 'LP';
+            if (this.state.sede === 'Santa Cruz') sedeId = 'SC';
+            if (this.state.sede === 'Cochabamba') sedeId = 'CB';
+            var sid = sedeId;
+            est = est.filter(function(e) { return App.sedeMatch(e.sede_origen || e.sede_id, sid); });
+        }
+        var sedeField = central ? '<div class="form-group"><label>Sede</label><select id="f-ins-sede" class="input input-full"><option value="LP">La Paz</option><option value="SC">Santa Cruz</option><option value="CB">Cochabamba</option></select></div>' : '<div class="form-group"><label>Sede</label><input type="text" id="f-ins-sede" class="input input-full" value="' + (this.sedeIds[this.state.sede] || '') + '" readonly></div>';
         var body = '<div class="form-grid">' +
             '<div class="form-group form-full"><label>Estudiante</label><select id="f-ins-estudiante" class="input input-full">' + est.map(function(e) { return '<option value="' + e.estudiante_id + '">' + e.nombre + ' ' + e.apellido + ' (' + (e.sede_origen || '') + ')</option>'; }).join('') + '</select></div>' +
             '<div class="form-group form-full"><label>Materia</label><select id="f-ins-materia" class="input input-full">' + mat.map(function(m) { return '<option value="' + m.materia_id + '">' + (m.nombre || '') + ' (' + (m.codigo || '') + ')</option>'; }).join('') + '</select></div>' +
-            '<div class="form-group"><label>Sede</label><select id="f-ins-sede" class="input input-full"><option value="LP">La Paz</option><option value="SC">Santa Cruz</option><option value="CB">Cochabamba</option></select></div>' +
+            sedeField +
             '<div class="form-group"><label>Gestion</label><input type="text" id="f-ins-gestion" class="input input-full" value="2024"></div>' +
             '<div class="form-group"><label>Semestre</label><select id="f-ins-semestre" class="input input-full"><option value="1">1</option><option value="2">2</option></select></div>' +
             '<div class="form-group"><label>Estado</label><select id="f-ins-estado" class="input input-full"><option value="ACTIVO">ACTIVO</option><option value="INACTIVO">INACTIVO</option><option value="RETIRADO">RETIRADO</option></select></div>' +
@@ -718,12 +785,17 @@ enterApp() {
     async loadNotas() {
         try {
             var results = await Promise.allSettled([this.api('/api/notas'), this.api('/api/estudiantes/nacional'), this.api('/api/materias')]);
-            this.state.notas = Array.isArray(results[0].value) ? results[0].value : [];
+            var notas = Array.isArray(results[0].value) ? results[0].value : [];
             var est = (results[1].status === 'fulfilled' && Array.isArray(results[1].value)) ? results[1].value : [];
             var mat = (results[2].status === 'fulfilled' && Array.isArray(results[2].value)) ? results[2].value : [];
             this.state._estMap = {}; est.forEach(function(e) { this.state._estMap[e.estudiante_id] = e.nombre + ' ' + e.apellido; }.bind(this));
             this.state._matMap = {}; mat.forEach(function(m) { this.state._matMap[m.materia_id] = m.nombre; }.bind(this));
-            this.renderNotasTable(this.state.notas);
+            if (!this.isCentral()) {
+                var sedeId = this.sedeIds[this.state.sede] || '';
+                notas = notas.filter(function(n) { return App.sedeMatch(n.sede_id, sedeId); });
+            }
+            this.state.notas = notas;
+            this.renderNotasTable(notas);
         } catch (e) { }
     },
 
@@ -745,10 +817,20 @@ enterApp() {
         try { mat = await this.api('/api/materias'); } catch(e) {}
         if (!Array.isArray(est)) est = [];
         if (!Array.isArray(mat)) mat = [];
+        var central = this.isCentral();
+        if (!central) {
+            var sedeId = this.sedeIds[this.state.sede] || '';
+            if (this.state.sede === 'La Paz') sedeId = 'LP';
+            if (this.state.sede === 'Santa Cruz') sedeId = 'SC';
+            if (this.state.sede === 'Cochabamba') sedeId = 'CB';
+            var sid = sedeId;
+            est = est.filter(function(e) { return App.sedeMatch(e.sede_origen || e.sede_id, sid); });
+        }
+        var sedeField = central ? '<div class="form-group"><label>Sede</label><select id="f-nota-sede" class="input input-full"><option value="LP">La Paz</option><option value="SC">Santa Cruz</option><option value="CB">Cochabamba</option></select></div>' : '<div class="form-group"><label>Sede</label><input type="text" id="f-nota-sede" class="input input-full" value="' + (this.sedeIds[this.state.sede] || '') + '" readonly></div>';
         var body = '<div class="form-grid">' +
             '<div class="form-group form-full"><label>Estudiante</label><select id="f-nota-estudiante" class="input input-full">' + est.map(function(e) { return '<option value="' + e.estudiante_id + '">' + (e.nombre || '') + ' ' + (e.apellido || '') + '</option>'; }).join('') + '</select></div>' +
             '<div class="form-group form-full"><label>Materia</label><select id="f-nota-materia" class="input input-full">' + mat.map(function(m) { return '<option value="' + m.materia_id + '">' + (m.nombre || '') + '</option>'; }).join('') + '</select></div>' +
-            '<div class="form-group"><label>Sede</label><select id="f-nota-sede" class="input input-full"><option value="LP">La Paz</option><option value="SC">Santa Cruz</option><option value="CB">Cochabamba</option></select></div>' +
+            sedeField +
             '<div class="form-group"><label>Gestion</label><input type="text" id="f-nota-gestion" class="input input-full" value="2024"></div>' +
             '<div class="form-group"><label>Semestre</label><select id="f-nota-semestre" class="input input-full"><option value="1">1</option><option value="2">2</option></select></div><div class="form-group"></div>' +
             '<div class="form-group"><label>Nota 1</label><input type="number" id="f-nota1" class="input input-full" min="0" max="100"></div>' +
@@ -872,9 +954,9 @@ enterApp() {
             var sessionsTbody = document.querySelector('#monitor-sessions tbody');
             if (data.sesiones && data.sesiones.length > 0) {
                 var self = this;
-                sessionsTbody.innerHTML = data.sesiones.map(function(s) { return '<tr><td>' + (s.nombre || s.ip) + '</td><td>' + self.sedeBadge(s.sede, true) + '</td><td>' + (s.conectadoHace || '') + '</td></tr>'; }).join('');
+                sessionsTbody.innerHTML = data.sesiones.map(function(s) { return '<tr><td>' + (s.nombre || 'Anonimo') + '</td><td>' + (s.ip || '-') + '</td><td>' + self.sedeBadge(s.sede, true) + '</td><td>' + (s.conectadoHace || '') + '</td></tr>'; }).join('');
             } else {
-                sessionsTbody.innerHTML = '<tr><td colspan="3" class="empty-cell">Sin sesiones</td></tr>';
+                sessionsTbody.innerHTML = '<tr><td colspan="4" class="empty-cell">Sin sesiones</td></tr>';
             }
             var feed = document.getElementById('monitor-activity');
             if (data.actividad && data.actividad.length > 0) {
@@ -928,13 +1010,15 @@ enterApp() {
     renderSedesTable(sedes, estCounts) {
         var tbody = document.querySelector('#sedes-table tbody');
         if (!sedes || sedes.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="empty-cell">Sin sedes</td></tr>'; return; }
+        var canEdit = this.isCentral();
         tbody.innerHTML = sedes.map(function(s) {
             var key = s.sede_id || (s.nombre || '').substring(0, 2).toUpperCase();
             var count = estCounts[key] || 0;
             var cap = parseInt(s.capacidad_maxima) || 0;
             var pct = cap > 0 ? Math.min((count / cap) * 100, 100) : 0;
             var color = pct > 80 ? '#ef4444' : pct > 50 ? '#f59e0b' : '#22c55e';
-            return '<tr><td title="' + s.sede_id + '">' + (s.sede_id || '').substring(0, 8) + '...</td><td>' + (s.nombre || '') + '</td><td>' + (s.ciudad || '') + '</td><td>' + (s.director || '') + '</td><td>' + (s.email || '') + '</td><td>' + cap + '</td><td>' + count + '</td><td><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div><div class="progress-label">' + pct.toFixed(0) + '%</div></td><td><button class="btn btn-sm btn-secondary" onclick="App.editSede(\'' + s.sede_id + '\')">Editar</button> <button class="btn btn-sm btn-danger" onclick="App.deleteSede(\'' + s.sede_id + '\')">Eliminar</button></td></tr>';
+            var actions = canEdit ? '<button class="btn btn-sm btn-secondary" onclick="App.editSede(\'' + s.sede_id + '\')">Editar</button> <button class="btn btn-sm btn-danger" onclick="App.deleteSede(\'' + s.sede_id + '\')">Eliminar</button>' : '<span class="text-muted" style="font-size:12px;">Solo lectura</span>';
+            return '<tr><td title="' + s.sede_id + '">' + (s.sede_id || '').substring(0, 8) + '...</td><td>' + (s.nombre || '') + '</td><td>' + (s.ciudad || '') + '</td><td>' + (s.director || '') + '</td><td>' + (s.email || '') + '</td><td>' + cap + '</td><td>' + count + '</td><td><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div><div class="progress-label">' + pct.toFixed(0) + '%</div></td><td>' + actions + '</td></tr>';
         }).join('');
     },
 
